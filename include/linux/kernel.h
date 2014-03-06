@@ -188,6 +188,12 @@ static inline void might_fault(void)
 }
 #endif
 
+#ifdef CONFIG_LGE_HANDLE_PANIC
+extern void set_crash_store_enable(void);
+extern void set_crash_store_disable(void);
+extern void store_crash_log(char *p);
+#endif
+
 extern struct atomic_notifier_head panic_notifier_list;
 extern long (*panic_blink)(int state);
 NORET_TYPE void panic(const char * fmt, ...)
@@ -334,6 +340,12 @@ extern int func_ptr_is_kernel_text(void *ptr);
 
 struct pid;
 extern struct pid *session_of_pgrp(struct pid *pgrp);
+
+#if defined(CONFIG_LGE_HANDLE_PANIC)
+extern void set_crash_store_enable(void);
+extern void set_crash_store_disable(void);
+extern void store_crash_log(char *p);
+#endif
 
 unsigned long int_sqrt(unsigned long);
 
@@ -748,5 +760,8 @@ extern int __build_bug_on_failed;
 #ifdef CONFIG_FTRACE_MCOUNT_RECORD
 # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
 #endif
+
+/* To identify board information in panic logs, set this */
+extern char *mach_panic_string;
 
 #endif
