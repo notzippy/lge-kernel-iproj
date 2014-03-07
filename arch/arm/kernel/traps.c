@@ -506,6 +506,7 @@ do_cache_op(unsigned long start, unsigned long end, int flags)
 #ifdef CONFIG_ARCH_MSM7X27
 		mb();
 #endif
+
 		return;
 	}
 	up_read(&mm->mmap_sem);
