@@ -40,14 +40,41 @@
 #include "devices_i_atnt.h"
 #include "board_i_atnt.h"
 
-#ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
-#define MSM_FB_PRIM_BUF_SIZE (roundup((1920 * 1088 * 4), 4096) * 3) /* 4 bpp x 3 pages */
+#ifdef CONFIG_FB_MSM_LCDC_DSUB
+/* VGA = 1440 x 900 x 4(bpp) x 2(pages)
+   prim = 1024 x 600 x 4(bpp) x 2(pages)
+   This is the difference. */
+#define MSM_FB_DSUB_PMEM_ADDER (0xA32000-0x4B0000)
 #else
-#define MSM_FB_PRIM_BUF_SIZE (roundup((1920 * 1088 * 4), 4096) * 2) /* 4 bpp x 2 pages */
+#define MSM_FB_DSUB_PMEM_ADDER (0)
+#endif
+
+#ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
+/* prim = 1024 x 600 x 4(bpp) x 3(pages) */
+//#define MSM_FB_PRIM_BUF_SIZE 0x708000
+/* prim = 1280 x 736 x 4(bpp) x 3(pages) */
+#define MSM_FB_PRIM_BUF_SIZE 0xAC8000
+#else
+/* prim = 1024 x 600 x 4(bpp) x 2(pages) */
+//#define MSM_FB_PRIM_BUF_SIZE 0x4B0000
+/* prim = 1280 x 736 x 4(bpp) x 2(pages) */
+#define MSM_FB_PRIM_BUF_SIZE 0x730000
+#endif
+
+#ifdef CONFIG_FB_MSM_HDMI_MSM_PANEL
+#define MSM_FB_EXT_BUF_SIZE  (1920 * 1080 * 2 * 1) /* 2 bpp x 1 page */
+#elif defined(CONFIG_FB_MSM_TVOUT)
+#define MSM_FB_EXT_BUF_SIZE  (720 * 576 * 2 * 2) /* 2 bpp x 2 pages */
+#else
+#define MSM_FB_EXT_BUFT_SIZE	0
 #endif
 
 /* Note: must be multiple of 4096 */
-#define MSM_FB_SIZE roundup(MSM_FB_PRIM_BUF_SIZE, 4096)
+#define MSM_FB_SIZE roundup(MSM_FB_PRIM_BUF_SIZE + MSM_FB_EXT_BUF_SIZE+0xFD2000 + \
+				MSM_FB_DSUB_PMEM_ADDER, 4096)
+
+#define MSM_PMEM_SF_SIZE 0x4000000 /* 64 Mbytes */
+#define MSM_HDMI_PRIM_PMEM_SF_SIZE 0x4000000 /* 64 Mbytes */
 
 extern unsigned char hdmi_is_primary;
 #if 0
