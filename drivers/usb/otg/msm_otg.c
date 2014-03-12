@@ -43,6 +43,11 @@
 #include <mach/msm_xo.h>
 #include <mach/msm_bus.h>
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#define USB_FASTCHG_LOAD 1000 /* uA */
+#endif
+
 #define MSM_USB_BASE	(motg->regs)
 #define DRIVER_NAME	"msm_otg"
 
@@ -889,7 +894,14 @@ static void msm_otg_notify_charger(struct msm_otg *motg, unsigned mA)
 
 	if (motg->cur_power == mA)
 		return;
-
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	if (force_fast_charge == 1) {
+			mA = USB_FASTCHG_LOAD;
+			pr_info("USB fast charging is ON - 1000mA.\n");
+	} else {
+		pr_info("USB fast charging is OFF.\n");
+	}
+#endif
 	dev_info(motg->otg.dev, "Avail curr from USB = %u\n", mA);
 	pm8921_charger_vbus_draw(mA);
 	motg->cur_power = mA;
@@ -2133,6 +2145,27 @@ const struct file_operations msm_otg_mode_fops = {
 	.release = single_release,
 };
 
+static int msm_otg_show_otg_state(struct seq_file *s, void *unused)
+{
+	struct msm_otg *motg = s->private;
+	struct otg_transceiver *otg = &motg->otg;
+
+	seq_printf(s, "%s\n", otg_state_string(otg->state));
+	return 0;
+}
+
+static int msm_otg_otg_state_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, msm_otg_show_otg_state, inode->i_private);
+}
+
+const struct file_operations msm_otg_state_fops = {
+	.open = msm_otg_otg_state_open,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = single_release,
+};
+
 static int msm_otg_show_chg_type(struct seq_file *s, void *unused)
 {
 	struct msm_otg *motg = s->private;
@@ -2248,6 +2281,7 @@ const struct file_operations msm_otg_bus_fops = {
 };
 
 static struct dentry *msm_otg_dbg_root;
+static struct dentry *msm_otg_dbg_state;
 
 static int msm_otg_debugfs_init(struct msm_otg *motg)
 {
@@ -2298,6 +2332,15 @@ static int msm_otg_debugfs_init(struct msm_otg *motg)
 		debugfs_remove_recursive(msm_otg_dbg_root);
 		return -ENODEV;
 	}
+
+	msm_otg_dbg_state = debugfs_create_file("otg_state", S_IRUGO,
+				msm_otg_dbg_root, motg, &msm_otg_state_fops);
+
+	if (!msm_otg_dbg_state) {
+		debugfs_remove_recursive(msm_otg_dbg_root);
+		return -ENODEV;
+	}
+
 	return 0;
 }
 
