@@ -1771,8 +1771,8 @@ static struct touch_device_caps touch_caps = {
 static struct touch_operation_role touch_role = {
 	.operation_mode 		= INTERRUPT_MODE,
 	.key_type				= TOUCH_HARD_KEY,
-	.report_mode			= CONTINUOUS_REPORT_MODE,
-	.delta_pos_threshold 	= 0,
+	.report_mode   			= REDUCED_REPORT_MODE,//CONTINUOUS_REPORT_MODE,
+	.delta_pos_threshold     	= 5,//0,
 	.orientation 			= 0,
 	.report_period			= 12500000,
 	.booting_delay 			= 400,
@@ -1782,7 +1782,7 @@ static struct touch_operation_role touch_role = {
 	.jitter_curr_ratio		= 30,	
     .accuracy_filter_enable = 1,
 	.sleep_mode             = 0,
-	.ta_debouncing_mode     = 0,
+	.ta_debouncing_mode     = 1,
 	.irqflags 				= IRQF_TRIGGER_FALLING,
 };
 
@@ -2209,8 +2209,8 @@ static struct regulator_consumer_supply vreg_consumers_PM8901_S4_PC[] = {
 /* RPM early regulator constraints */
 static struct rpm_regulator_init_data rpm_regulator_early_init_data[] = {
 	/*	 ID       a_on pd ss min_uV   max_uV   init_ip    freq */
-	RPM_SMPS(PM8058_S0, 0, 1, 1,  500000, 1325000, SMPS_HMIN, 1p60),
-	RPM_SMPS(PM8058_S1, 0, 1, 1,  500000, 1250000, SMPS_HMIN, 1p60),
+	RPM_SMPS(PM8058_S0, 0, 1, 1,  500000, 1450000, SMPS_HMIN, 1p60),
+	RPM_SMPS(PM8058_S1, 0, 1, 1,  500000, 1450000, SMPS_HMIN, 1p60),
 };
 
 /* RPM regulator constraints */
@@ -2264,8 +2264,8 @@ static struct rpm_regulator_init_data rpm_regulator_init_data[] = {
 	/*	ID        a_on pd ss min_uV   max_uV   init_ip */
 	RPM_LDO(PM8901_L0,  0, 1, 0, 0, 0, LDO300HMIN),
 	RPM_LDO(PM8901_L1,  0, 1, 0, 3000000, 3000000, LDO300HMIN),
-	RPM_LDO(PM8901_L2,  0, 1, 0, 3000000, 3000000, LDO300HMIN),
-	RPM_LDO(PM8901_L3,  0, 1, 0, 3000000, 3000000, LDO300HMIN),
+	RPM_LDO(PM8901_L2,  0, 1, 0, 2800000, 2800000, LDO300HMIN),
+	RPM_LDO(PM8901_L3,  0, 1, 0, 2800000, 2800000, LDO300HMIN),
 	RPM_LDO(PM8901_L4,  0, 1, 0, 2800000, 2800000, LDO300HMIN),
 	RPM_LDO(PM8901_L5,  0, 1, 0, 2850000, 2850000, LDO300HMIN),
 	RPM_LDO(PM8901_L6,  0, 1, 0, 0, 0, LDO300HMIN),
@@ -3440,7 +3440,7 @@ static int __init battery_information_setup(char *batt_info)
             lge_battery_info = BATT_DS2704;
 
             msm_charger_data.max_voltage = 4350;
-            msm_charger_data.min_voltage = 3500;
+            msm_charger_data.min_voltage = 3300;
 	//FIXME 3160_conflict
 	//msm_charger_data.resume_voltage = 4250;
 
@@ -3452,8 +3452,8 @@ static int __init battery_information_setup(char *batt_info)
     {
             lge_battery_info = BATT_ISL6296;
 
-            msm_charger_data.max_voltage = 4200;
-            msm_charger_data.min_voltage = 3200;
+            msm_charger_data.max_voltage = 4350;
+            msm_charger_data.min_voltage = 3300;
 	//FIXME 3160_conflict		
 	// msm_charger_data.resume_voltage = 4100;
 
@@ -3703,7 +3703,7 @@ static struct pm8xxx_pwrkey_platform_data pm8058_pwrkey_pdata = {
 	.pull_up		= 1,
 	.kpd_trigger_delay_us   = 15625,
 	.wakeup			= 1,
-	.pwrkey_time_ms		= 0,
+	.pwrkey_time_ms		= 500,
 };
 
 #if defined(CONFIG_PMIC8058_OTHC) || defined(CONFIG_PMIC8058_OTHC_MODULE)
